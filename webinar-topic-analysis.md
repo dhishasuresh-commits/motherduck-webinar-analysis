@@ -1,198 +1,175 @@
-# Webinar topic analysis
+# Three things I'd run at MotherDuck, and the data behind them
 
-Research for a growth marketing job application at MotherDuck: what should
-the next webinar be about, based on what people actually say about DuckDB
-and MotherDuck on Hacker News — not on what seems intuitively hot.
-
-Full methodology, corpus provenance, and rerun instructions are in
-[README.md](README.md). This document is the findings.
-
-## The headline number, with its caveat attached
-
-Raw mention volume: 377 (2022, 314-day window) vs. 1,896 (recent, 364-day
-window). Normalized to a daily rate, that's a **~4.3x increase** — notably
-less than the naive 5.0x you get from dividing the raw counts, because the
-2022 window is about six weeks shorter.
-
-That 4.3x number still isn't a clean "DuckDB interest grew 4.3x" claim: this
-project has no all-of-Hacker-News baseline for either window, so there's no
-way to separate DuckDB/MotherDuck-specific growth from Hacker News' overall
-post/comment volume growing since 2022 for unrelated reasons. Treat the
-raw-volume comparison as directional, not a rate.
-
-**The finding that does hold up under that scrutiny is the topic-mix shift**
-within each corpus — a share-of-mentions comparison, which isn't affected by
-how much bigger HN got in the meantime.
-
-## Topic mix: 2022 vs. recent
-
-| Topic | 2022 | Recent | Change |
-|---|---:|---:|---:|
-| AI agents and MCP | 0 (0.0%) | 165 (8.7%) | **+8.7pp** |
-| DuckLake and lakehouse formats | 6 (1.6%) | 115 (6.1%) | +4.5pp |
-| customer-facing and embedded analytics | 2 (0.5%) | 42 (2.2%) | +1.7pp |
-| performance and benchmarks | 65 (17.2%) | 352 (18.6%) | +1.3pp |
-| cost and pricing vs other warehouses | 2 (0.5%) | 35 (1.8%) | +1.3pp |
-| Postgres integration | 25 (6.6%) | 82 (4.3%) | −2.3pp |
-| local vs cloud execution | 63 (16.7%) | 241 (12.7%) | −4.0pp |
-| general or other | 173 (45.9%) | 790 (41.7%) | −4.2pp |
-| Python and notebook workflows | 41 (10.9%) | 74 (3.9%) | **−7.0pp** |
-
-Two things worth building a narrative around:
-
-- **AI agents/MCP is the only topic that went from non-existent to
-  top-4.** It didn't exist as a category in 2022 (MCP itself wasn't
-  invented yet) and is now the 4th-largest theme.
-- **Python/notebook workflows fell the hardest**, in both share and
-  framing. In 2022 people talked about DuckDB mainly as "a faster
-  replacement for Pandas." That framing has been crowded out — not
-  necessarily because it stopped being true, but because newer narratives
-  (agents, DuckLake, the Aug 2026 AWS/DuckLabs acquisition) now dominate
-  the conversation.
-
-"General or other" (41.7% of recent mentions) is itself a real finding, not
-noise to explain away — see the cluster breakdown below.
-
-## What "general or other" actually contains
-
-790 recent items didn't fit any of the 8 themes. Read and clustered (not
-re-tagged) into:
-
-| Cluster | Count |
-|---|---:|
-| General diffuse DuckDB chatter (capability Qs, tooling asides, personal-project mentions) | 551 |
-| AWS acquires DuckLabs — reaction & governance debate (Aug 2026 news cycle) | 62 |
-| Unrelated hiring-thread noise (job ads swept in by keyword search) | 50 |
-| Short one-line praise or complaints | 38 |
-| Official DuckDB/MotherDuck blog & docs pages, no distinct theme | 32 |
-| Niche extension & side-project Show HN launches (DuckDB incidental) | 32 |
-| Architecture/capability comparison Q&A (OLAP vs OLTP, "how does X compare") | 25 |
-
-Roughly 15% of this bucket (job ads + incidental Show HN mentions) is pure
-keyword-search noise, not really about DuckDB. The acquisition-reaction spike
-is a one-time news event. The ~70% "diffuse chatter" remainder is the honest
-ceiling on how much of this corpus doesn't map to a specific webinar theme
-even after real reading.
-
-## What people are building
-
-Searched the recent corpus for build-narrative language ("Show HN," "I
-built," "we use DuckDB for," architecture descriptions): **221 items**
-describe an actual build.
-
-| What they built | Count |
-|---|---:|
-| Data pipelines / warehouses / ETL replacements | 47 |
-| AI agent / MCP tooling | 47 |
-| Browser/WASM query & analytics tools | 41 (36 after removing 2 mismatches, 2 duplicates, 1 non-build) |
-| Other (one-off tools, personal projects) | 53 |
-| Logging / monitoring / observability tools | 10 |
-| DuckDB extensions (community add-ons) | 9 |
-| Niche vertical apps (finance/trading, spatial, hobby) | 8 |
-| Dev tooling: SQL clients, CLIs, GUIs, transpilers | 6 |
-
-Ranking by how much detail builders wrote about their own project (not by
-popularity) surfaces AI-agent tooling almost exclusively — 15 of the top 20
-most-detailed build write-ups are agent/MCP launches. That's a real signal
-about who's building in public around DuckDB right now, not a ranking
-artifact.
-
-### Browser/WASM deep dive
-
-Of the 36 genuine browser/WASM builds, the dominant pattern is **"drop a
-file in, query it with SQL, nothing leaves the browser"** — SQL IDEs,
-embeddable analytics components, and niche domain viewers (chip-testing
-yield data, clinical trial file formats, Wikidata). Consistently reported
-problems:
-
-1. **No feature parity with native DuckDB** — one team built DuckDB-WASM +
-   Parquet + S3, then "ended up stripping it all out and replacing it with
-   a boring REST API" over missing compression support. A DuckDB
-   maintainer confirmed: *"the wasm docs state that feature-parity isn't
-   there — yet."*
-2. **No multithreading or SIMD in the browser**, reported as making CSV
-   parsing "painfully slow" vs. native.
-3. **Unreliable persistent storage** — OPFS-backed writes surviving a
-   reload "isn't really reliable," with real risk of silent data loss on
-   storage eviction.
-4. **Bundle size** — cited figures range from ~6MB compressed to 95MB+.
-
-## What people are stuck on
-
-Searched for question-phrased and stuck/confused/limitation language:
-**~230 genuine questions** (of 367 pattern-matched candidates, after
-filtering out rhetorical asides and acquisition-news commentary).
-
-| What they were trying to do | Count (approx.) |
-|---|---:|
-| "Should I use DuckDB or X?" — comparison/decision questions | ~75 |
-| Postgres integration how-to (pg_duckdb, pg_lake, FDW, catalogs) | ~28 |
-| Concurrency / multi-writer / server & hosting | ~24 |
-| Memory, OOM & scaling limits | ~16 |
-| DuckLake / Iceberg / table-format specifics | ~14 |
-| Browser/WASM technical questions | ~12 |
-| Vector search (VSS/HNSW) capability questions | ~7 |
-| Conceptual/architecture clarification | ~15 |
-| Everything else (one-off/niche) | ~39 |
-
-**The single dominant unmet need isn't a technical limitation at all** —
-it's people trying to figure out whether DuckDB is the right tool relative
-to something they already know: Postgres, Pandas, ClickHouse, Snowflake.
-That's a positioning gap, not a product gap.
-
-## Cross-referenced against MotherDuck's own event history
-
-`data/covered-topics.csv` — 243 MotherDuck events, Dec 2023 to present —
-lets us check which of these themes are already saturated vs. genuine
-whitespace, instead of guessing:
-
-| Theme | HN signal | Events already run | Read |
-|---|---:|---:|---|
-| AI agents / MCP | 165 mentions, 47 builds, biggest mover (+8.7pp) | **55 events** | Saturated. Don't pitch "AI agents 101" — go narrower if pitching this at all. |
-| DuckLake / lakehouse | 115 mentions, +4.5pp | 21 events | Well covered, matches MotherDuck's own product push. |
-| "DuckDB vs. X" decision framework | **~75 questions** — the single largest need signal in the whole dataset | **0 dedicated events** | **Clear whitespace.** Nothing in 243 events directly addresses "when do I use DuckDB vs. Postgres/Pandas/Snowflake/ClickHouse." |
-| Postgres integration | 107 mentions across both categories and questions | 7 events | Underserved relative to organic interest — it's a top-3 specific theme in the recent corpus. |
-| Browser/WASM & embedded analytics | 36 real builds + 42 "customer-facing" mentions | 4–5 events | Underserved relative to grassroots building activity. |
-| Cost/pricing vs. other warehouses | 37 mentions, but includes high-engagement outliers ("$2M/yr on Snowflake," "OpenAI Just Made Analytics 10x Cheaper") | 6 events | Moderate coverage; individual items suggest more appetite than volume alone implies. |
-
-## Recommendation
-
-The best-supported pitch, in order:
-
-1. **"DuckDB vs. X: a decision framework"** (Postgres, Pandas, Snowflake,
-   ClickHouse) — addresses the single largest recurring need (~75
-   questions) and is genuine whitespace against 243 prior events. Could
-   fold in the Postgres-integration how-to questions (~28) as a segment,
-   since "should I use DuckDB with my Postgres setup" is itself one of the
-   most common comparison questions. Real example of the comparison appetite
-   this would draw on: the [Polars vs. DuckDB vs. Daft vs. Spark benchmark
-   thread](https://news.ycombinator.com/item?id=45920881) (263 points).
-2. **Embedding DuckDB in your own product (browser/WASM + customer-facing
-   analytics)** — grounded in 36 real community builds and clear gaps
-   (feature parity, storage reliability, bundle size) worth addressing
-   head-on, with only a handful of prior events on the topic. See
-   [Duck-UI](https://news.ycombinator.com/item?id=45633453) (213 points) for
-   the pattern's high-water mark, and [the thread where a team ripped
-   DuckDB-WASM back out over missing Parquet compression
-   support](https://news.ycombinator.com/item?id=45780399) for the wall
-   builders keep hitting.
-3. If pitching AI agents/MCP at all, don't compete on "what is MCP" — that
-   ground is covered 55 times over. A defensible angle is the honest one
-   this dataset surfaces: DuckDB used *as infrastructure inside* an agent
-   tool (47 builds do this), not "agents as a feature of DuckDB."
-
-## Data files
-
-| File | What it is |
-|---|---|
-| `data/hn_duckdb_motherduck_last12mo.json` | Raw recent-corpus scrape (1,896 items) |
-| `data/relevance_check.csv` | 50-item stratified relevance sample + labels |
-| `data/summary.json` | Fetch-run metadata (counts, date range, per-month breakdown) |
-| `data/covered-topics.csv` | MotherDuck's own event history (243 rows), used for the whitespace cross-reference above |
-
-The tagged `posts` table itself lives in MotherDuck, not as a file in this
-repo — see README.md for the schema and how to query it.
+*Dhisha Suresh Babu | September 2026*
 
 ---
 
-Repo: <https://github.com/dhishasuresh-commits/motherduck-webinar-analysis>
+## What I found
+
+I pulled every Hacker News post and comment mentioning DuckDB or MotherDuck from two periods: 2022, using MotherDuck's own `sample_data.hn.hacker_news` table, and the last twelve months, using the Algolia HN API. That gave me 2,273 items, which I loaded into MotherDuck and read item by item to assign topics. I then compared what people discuss against every event MotherDuck has run since December 2023, 243 in total.
+
+Three things came out of it.
+
+Performance and benchmarking is the largest single topic in both periods. MotherDuck's CEO has already argued that benchmarks can't be trusted, but no session has taken the next step: across 243 events, ClickHouse and Polars are never named, and DuckDB has never been put head-to-head against a competitor. DuckDB has become the engine that other engines benchmark themselves against, which means those evaluation conversations are already happening without MotherDuck in them.
+
+Thirty-six people shipped browser-based DuckDB tools in the last twelve months, and they keep hitting the same four walls. The last time MotherDuck covered DuckDB in the browser was May 2024, over two years ago.
+
+The single largest category of questions people ask, roughly 75 instances, is which tool to choose. That one is not a webinar. It is written comparison content, and it costs a fraction of a session.
+
+---
+
+## 1. Your CEO already said benchmarks lie. People still have to choose.
+
+**Format:** Webinar, with an outside presenter. See the note below.
+
+**The finding.** Performance and benchmarks is the largest specific topic in the corpus and the only one that is both large and stable: 17.2% of DuckDB discussion in 2022 and 18.6% in the last twelve months, 352 items. The highest-engagement items in the recent corpus are all benchmark content. DuckDB's own Async I/O post at 281 points, the sharded 1T-row challenge at 224, and a four-way Polars, DuckDB, Daft and Spark comparison at 263. Alongside those sits a cluster of posts from newer engines, SlothDB and Stratum among them, framed explicitly as beating DuckDB on ClickBench.
+
+The observation worth building on: DuckDB has become the engine other engines benchmark themselves against. That is a strong position and an exposed one. Competitors choose the workload, and the evaluation conversation happens in threads where MotherDuck has no presence.
+
+Thread: https://news.ycombinator.com/item?id=45920881
+
+**What is already covered, and what isn't.** In October 2025, Jordan Tigani ran a livestream called "Lies, Damn Lies, and Benchmarks" on DuckDB performance and whether benchmarking techniques can be trusted at all. That argument is made, by the CEO, with a recording available. What no session has done is the next step. Across 243 events from December 2023 to November 2026, ClickHouse and Polars are never mentioned by name, and no session puts DuckDB head-to-head against a named competitor.
+
+So the gap is not "are benchmarks reliable." It is "given that they are not, how do I actually decide." This session picks up where Tigani's left off and should reference it directly.
+
+**Who's in the room.** An engineer choosing an analytical engine for a new project. They have already tried DuckDB, they have their own numbers, and they are looking for evidence and detail to justify a decision to their team.
+
+**Why this session.** Run the same workload across engines, show where the numbers diverge, and be explicit about which differences matter for which workloads. The output is a decision framework, not a scoreboard.
+
+**The credibility problem, and how to solve it.** MotherDuck running a comparison of DuckDB against ClickHouse and Polars is the vendor grading its own homework, and this audience will see that immediately. There is precedent in MotherDuck's own event history: the BI session used Ryan Dolley, an independent analyst, rather than an in-house voice. The same move applies here. This session needs a third-party presenter or an author of one of the competing engines to be worth running at all.
+
+**Product tie-in.** The vs Snowflake, vs BigQuery, vs Redshift and vs ClickHouse comparison pages. This sends qualified traffic to pages that already exist.
+
+**Promotion.** The benchmark threads themselves, plus the DuckDB newsletter and Slack community.
+
+**Metric and guardrail.** Registrant-to-trial as the metric, since this audience is mid-evaluation. Show rate as the guardrail. One session is a single data point, so I would read it against the baseline across several rather than on its own.
+
+---
+
+## 2. Where the browser stops being enough
+
+**Format:** Webinar, live build.
+
+**The finding.** In the last twelve months, 36 people posted browser-based tools built on DuckDB-WASM. Almost all of them are the same shape: drop a file in, query it with SQL, nothing leaves the machine. Duck-UI, a browser SQL IDE, reached 213 points. A Citi Bike visualization rendering 291 million rides in the browser reached 113. Below those sits a long tail of general-purpose SQL workbenches, several openly competing with each other, plus domain viewers for chip-testing yield data, clinical trial formats and Wikidata.
+
+They also keep hitting the same four walls.
+
+- **Feature parity.** One team built on DuckDB-WASM with Parquet and S3, then stripped it out and replaced it with a REST API because capabilities they needed were missing from the WASM build. A DuckDB maintainer replied confirming that parity is not there yet.
+- **No multithreading or SIMD** in the browser, which one builder said made CSV parsing painfully slow next to native.
+- **Unreliable persistence.** OPFS survival across page reloads was described as not really reliable, with the risk that a browser evicts the origin's storage and silently drops unsynced writes.
+- **Bundle size.** Cited figures ran from roughly 6MB compressed to over 95MB, a real cost for something meant to drop into a web page.
+
+Duck-UI thread: https://news.ycombinator.com/item?id=45633453
+The WASM-to-REST-API thread, with the maintainer's parity reply: https://news.ycombinator.com/item?id=45780399
+
+**Who's in the room.** A developer who built or is building a browser-only analytical tool and has hit one of those four walls. They are not on MotherDuck. They chose the browser specifically to avoid a backend.
+
+**Why this session.** Three of the four walls are reasons a browser-only build eventually needs something behind it. That makes the honest version of this talk more useful than an advocacy one: here is what DuckDB-WASM does well, here is exactly where it stops, and here is what you do at that point. Taking the limitations seriously is what earns this audience's trust.
+
+**Coverage.** MotherDuck last covered DuckDB in the browser at Data @Scale in May 2024, over two years ago, when this was mostly a promising idea. Nothing since. Beyond Charts in March 2026 covers Dives, which are hosted React apps built on MotherDuck through an AI agent. That is the path for people already on the platform. These 36 are not on it yet.
+
+**Product tie-in.** The core cloud product as the backend these builds end up needing, and Dives as the destination for the ones that want to stop maintaining their own UI.
+
+**Promotion.** The Show HN threads themselves, several of which are still active, plus DuckDB Slack and the newsletter. This audience is unusually easy to find because they announced themselves.
+
+**Metric and guardrail.** Registrant-to-signup as the metric, since this audience has a live problem and can act on it. Show rate as the guardrail. Same caveat on reading a single session.
+
+**Confidence.** The 36 figure comes from a pattern-matched pass over the corpus, not the item-by-item read used for topic tagging. I removed two category mismatches, two duplicates and one item that referenced SQLite prior art rather than a DuckDB build. Treat it as a confident estimate rather than an exact census.
+
+---
+
+## 3. The 75 questions: comparison content, not a webinar
+
+**Format:** Five written comparison pages.
+
+**The finding.** I pulled every item in the recent corpus phrased as a question or a stuck point, roughly 230 after filtering. The largest group by a wide margin is comparison and decision questions, around 75 instances, more than double the next category. People asking whether to use DuckDB or Polars, or ClickHouse Local, or Postgres, or pandas, and why.
+
+A representative sample:
+
+- What is DuckDB better compared to, and what were people using before it?
+- Why DuckDB when one can use Python and pandas?
+- What's the advantage over Polars for the same task?
+- Anyone tried both DuckDB and ClickHouse Local?
+- Why did you use DuckDB instead of Snowflake?
+
+**Why this is not a webinar.** These are not questions people attend a session to answer. They are questions people type into a search box or an AI assistant at the moment of deciding. The right format is written comparison content, which costs a fraction of a webinar and compounds rather than expiring.
+
+**Why it matters commercially.** Every one of those 75 is a query that will be asked again next month, and the answer is currently being written by whoever ranks for it. Separately, three of the 50 items in my hand-labelled sample were people confused about the relationship between DuckDB, the DuckDB Foundation and MotherDuck. If third parties are supplying the answers to comparison questions, they are also supplying the answers to ownership and architecture questions.
+
+**One thing the data says that I did not expect.** Cost and pricing versus other warehouses is only 1.8% of recent discussion, 35 items. People are not comparing these tools on price. They are comparing on fit: what is this for, when does it break, what do I lose. Comparison content built around price would miss what is actually being asked.
+
+**What I would do.** Take the top five comparisons by question volume and write one honest page each, including where DuckDB is the wrong choice. Measure organic entrances and assisted signups per page, and check whether the pages get cited in AI assistant answers, since a growing share of these questions now get asked there.
+
+**Confidence.** The question grouping is pattern-matched and manually filtered, not the item-by-item read used for topic tagging. Treat the counts as approximate.
+
+---
+
+## What I'm not pitching, and why
+
+AI agents and MCP is the single biggest mover in the data. It went from zero items in 2022 to 8.7% and 165 items in the last twelve months, and it is tied as the largest build category at 47 projects. On the data alone it is the obvious pitch.
+
+I am not pitching it because MotherDuck has run seven agent-themed online events in the last three months, five of them in August alone: Flights, agent-led onboarding, agent evaluation with Braintrust, Guides, a live stack build with dltHub and Lightdash, and a semantic layer debate. That is roughly one every two weeks, and the cadence is accelerating rather than steady.
+
+DuckLake is the second-biggest mover, from 1.6% to 6.1%, and was covered on 3 September. Data pipelines and ETL is the other 47-project build category, tied with agents and ahead of browser and WASM at 41, and has been covered repeatedly with Spark and Iceberg, Postgres CDC, and robust pipelines with AI.
+
+All three are correctly identified by the data and already served. The gap is not in what MotherDuck is talking about. It is in what has been left alone while agents took the calendar.
+
+---
+
+## What changed since 2022
+
+| Topic | 2022 (n) | 2022 % | Recent (n) | Recent % | Change |
+|---|---:|---:|---:|---:|---:|
+| Python and notebook workflows | 41 | 10.9% | 74 | 3.9% | −7.0pp |
+| General or other | 173 | 45.9% | 790 | 41.7% | −4.2pp |
+| Local vs cloud execution | 63 | 16.7% | 241 | 12.7% | −4.0pp |
+| Postgres integration | 25 | 6.6% | 82 | 4.3% | −2.3pp |
+| Cost and pricing vs other warehouses | 2 | 0.5% | 35 | 1.8% | +1.3pp |
+| Performance and benchmarks | 65 | 17.2% | 352 | 18.6% | +1.3pp |
+| Customer-facing and embedded analytics | 2 | 0.5% | 42 | 2.2% | +1.7pp |
+| DuckLake and lakehouse formats | 6 | 1.6% | 115 | 6.1% | +4.5pp |
+| AI agents and MCP | 0 | 0.0% | 165 | 8.7% | +8.7pp |
+
+Two notes on reading this table. Share and raw count move in opposite directions for several topics. Python fell 7 points in share while rising from 41 items to 74, and local vs cloud fell 4 points while rising from 63 to 241. Both conversations grew in absolute terms while others grew faster. I am reporting both numbers rather than picking the more flattering one, and I have not tried to explain which of the two effects dominates, because this data cannot separate them.
+
+The two corpora are also different sizes and cover different spans, so shares are comparable and raw counts are not.
+
+---
+
+## Limits
+
+**Precision.** I hand-labelled a stratified 50-item sample for whether DuckDB or MotherDuck was actually the subject rather than a passing mention. Overall precision was 80.0%, 90.9% on stories (n=11) and 76.9% on comments (n=39). The story and comment figures sit on small samples and I would not lean on the gap between them.
+
+**The labelling rule.** An item counted if the person was engaging with what DuckDB or MotherDuck does: asking about it, arguing about it, using it, or explaining it. It did not count if DuckDB appeared only in a list of tools or as praise with no substance. Hiring threads were a consistent source of false positives.
+
+**Nine of the 50 sampled items** were title-and-URL-only stories with no body text. For two of those, the only evidence was in the URL, one pointing at MotherDuck's own blog and one at a react-native-duckdb repository. I mislabelled both before adding a URL column. Any pipeline reading only title and text would have got those wrong.
+
+**Engagement scores are stories-only.** The `points` field is null for all comments in the HN data model, so any ranking by score excludes 78% of the recent corpus.
+
+**A news event in late August** produced a one-time spike in volume, accounting for 62 items. Recent-month totals are inflated relative to the baseline and August topic shares should be read with that in mind.
+
+**The 2022 corpus is a partial year.** MotherDuck's sample table runs from 1 January to 16 November 2022, so it covers ten and a half months against twelve for the recent window.
+
+**The corpus is Hacker News**, which is where developers in general discuss DuckDB. It is not MotherDuck's user base, its signups, or its churned accounts. People who argue about benchmarks in public are not necessarily people who give a vendor their email, and I have no data on the second group. Inside the company I would run this against product usage, signup source and activation data, and treat public discussion as one input rather than the measure.
+
+---
+
+## Method
+
+**The data.** Two corpora in one table. The first is MotherDuck's own `sample_data.hn.hacker_news`, filtered to rows mentioning DuckDB or MotherDuck. That table covers 1 January to 16 November 2022 only, and yielded 377 items, 326 comments and 51 stories. The second is the last twelve months, pulled from the Algolia Hacker News API, 1,896 items, 1,487 comments and 409 stories. Both were normalised to the same columns and tagged with an `era` field so the two periods could be compared in a single query. 2,273 rows in total, all of it in MotherDuck.
+
+**Collecting the recent corpus.** Three things went wrong before the data was usable. Algolia's tag syntax needs parentheses around an OR list, and a bare comma is read as AND, which returned zero results without any error. The API also caps any single query at roughly 1,000 retrievable results while still reporting a higher total, so a twelve-month request would have silently dropped the oldest items. I chunked the fetch by month to stay under the cap, with a recursive split if any single month exceeded it. Finally, Algolia's typo tolerance was matching duck.ai and DuckDuckGo, so I turned it off and confirmed the remaining matches contained the literal term.
+
+**Relevance check.** Keyword matching finds every mention, including the ones where DuckDB is just a name in a list, so I measured how often the match was real. I hand-labelled a stratified 50-item sample, proportional to the story and comment split of the full corpus. My rule: an item counts if the person is engaging with what DuckDB or MotherDuck does, whether asking about it, arguing about it, using it or explaining it. It does not count if DuckDB appears only in a list of tools or as praise with no substance behind it. Hiring threads were the most consistent source of false positives. Precision came out at 80.0% overall, 90.9% on stories and 76.9% on comments, though both of those sit on small samples.
+
+**The URL blind spot.** Nine of the 50 sampled items were title-and-URL-only stories with no body text at all. For two of them, the only evidence that the item was about DuckDB sat in the URL: one pointed at MotherDuck's own blog, the other at a react-native-duckdb repository. I labelled both incorrectly before adding a URL column to the review file. Any pipeline reading only title and text would have got them wrong, and I would not have caught it without reading the sample by hand.
+
+**Topic tagging.** My first attempt used keyword rules, and it pushed 50.8% of the corpus into "general or other." Reading the failures showed why. A comment about concurrency limits and ingestion rates is plainly a performance discussion to a human, but the rules only fired on literal words like "benchmark" or "faster." I dropped that approach and tagged by reading each item instead, across 23 batches of roughly 100. The final "general or other" rate was 42.4%. Still high, but now a real finding rather than a classifier blind spot: a large share of organic Hacker News chatter about DuckDB genuinely does not map to any specific theme.
+
+---
+
+## Reproducing this
+
+https://github.com/dhishasuresh-commits/motherduck-webinar-analysis
+
+Built with Claude Code. The analysis runs in MotherDuck against a table combining both corpora.
