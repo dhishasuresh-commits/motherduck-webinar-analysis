@@ -14,12 +14,34 @@ other") based on what it's actually about — not keyword-matched.
 
 | era | source | count | date range |
 |---|---|---|---|
-| `2022` | MotherDuck's shared `sample_data.hn.hacker_news` table | 377 (326 comments, 51 stories) | Jan–Nov 2022 |
-| `recent` | Algolia HN Search API | 1,896 (1,487 comments, 409 stories) | last 12 months |
+| `2022` | MotherDuck's shared `sample_data.hn.hacker_news` table | 377 (326 comments, 51 stories) | Jan 6 – Nov 16, 2022 (314 days, ~10.3 months) |
+| `recent` | Algolia HN Search API | 1,896 (1,487 comments, 409 stories) | Sep 12, 2025 – Sep 11, 2026 (364 days, ~12 months) |
 
-Headline finding: mention volume is up ~5x, and "AI agents and MCP" went from
-a topic that didn't exist in 2022 to the 4th-largest theme in the recent
-corpus. Full topic breakdown lives in the `posts` table (see queries below).
+Headline finding: **the raw mention-volume comparison is not a clean growth
+rate, and shouldn't be reported as one.** 377 mentions over 314 days (~1.2/day)
+vs. 1,896 over 364 days (~5.2/day) is a ~4.3x increase in daily rate once the
+windows are normalized to the same length — noticeably less than the naive
+1,896/377 ≈ 5.0x you get by dividing the raw counts, because the 2022 window
+is about 6 weeks shorter. More importantly, even the normalized number
+conflates two things this dataset can't tell apart: DuckDB/MotherDuck
+specifically getting more mentions, versus Hacker News' overall post/comment
+volume growing since 2022 for unrelated reasons. There's no all-of-HN
+baseline in this project to divide out that second effect, so treat any
+raw-volume comparison across eras as directional at best.
+
+The more defensible headline is the **topic-mix shift within each era**,
+which isn't subject to that confound: "AI agents and MCP" went from a topic
+that didn't exist in the 2022 corpus to the 4th-largest theme in the recent
+one. That's a compositional change (share of mentions, not count of mentions),
+so it holds up regardless of how much HN itself grew in the meantime. Full
+topic breakdown lives in the `posts` table (see queries below).
+
+`data/covered-topics.csv` is a separate reference file, not part of the
+tagged corpus above: it's MotherDuck's own events history (243 rows —
+conferences, meetups, and webinars from Dec 2023 onward, with date, title,
+description, format, and whether a recording is available). Useful for
+cross-checking which topics MotherDuck has already run a session on before
+proposing a new one.
 
 ## Where the two corpora came from
 
