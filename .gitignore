@@ -1,0 +1,17 @@
+# MotherDuck / DuckDB local database files
+*.duckdb
+*.duckdb.wal
+*.duckdb.tmp
+
+# Environment / secrets (motherduck_token lives in your shell profile, never here)
+.env
+.env.*
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
