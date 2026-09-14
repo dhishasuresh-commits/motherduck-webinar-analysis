@@ -164,11 +164,18 @@ The best-supported pitch, in order:
    questions) and is genuine whitespace against 243 prior events. Could
    fold in the Postgres-integration how-to questions (~28) as a segment,
    since "should I use DuckDB with my Postgres setup" is itself one of the
-   most common comparison questions.
+   most common comparison questions. Real example of the comparison appetite
+   this would draw on: the [Polars vs. DuckDB vs. Daft vs. Spark benchmark
+   thread](https://news.ycombinator.com/item?id=45920881) (263 points).
 2. **Embedding DuckDB in your own product (browser/WASM + customer-facing
    analytics)** — grounded in 36 real community builds and clear gaps
    (feature parity, storage reliability, bundle size) worth addressing
-   head-on, with only a handful of prior events on the topic.
+   head-on, with only a handful of prior events on the topic. See
+   [Duck-UI](https://news.ycombinator.com/item?id=45633453) (213 points) for
+   the pattern's high-water mark, and [the thread where a team ripped
+   DuckDB-WASM back out over missing Parquet compression
+   support](https://news.ycombinator.com/item?id=45780399) for the wall
+   builders keep hitting.
 3. If pitching AI agents/MCP at all, don't compete on "what is MCP" — that
    ground is covered 55 times over. A defensible angle is the honest one
    this dataset surfaces: DuckDB used *as infrastructure inside* an agent
@@ -185,3 +192,7 @@ The best-supported pitch, in order:
 
 The tagged `posts` table itself lives in MotherDuck, not as a file in this
 repo — see README.md for the schema and how to query it.
+
+---
+
+Repo: <https://github.com/dhishasuresh-commits/motherduck-webinar-analysis>
